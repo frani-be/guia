@@ -1,0 +1,20 @@
+# Fuente de la guía (no se publica en texto plano)
+guia-freelancer.html
+guia-freelancer.pdf
+GUÍA FREELANCER.md
+icon.svg
+frani_be.svg
+
+# Configuración y secretos
+.env
+.staticrypt.json
+
+# Lista de usuarios y links generados
+usuarios.txt
+links.txt
+
+# Temporales del build (d/ SÍ se commitea: es lo que sirve Pages)
+tmp/
+
+node_modules/
+.DS_Store

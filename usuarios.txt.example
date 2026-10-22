@@ -1,0 +1,4 @@
+# Un usuario de Instagram por línea, sin @ (se normaliza a minúsculas)
+# Las líneas que empiezan con # se ignoran
+usuario_ejemplo_1
+usuario_ejemplo_2

@@ -19,7 +19,7 @@ FUENTE="guia-freelancer.html"
 if [ -z "${BASE_PASSWORD:-}" ] || [ "$BASE_PASSWORD" = "tu_base_aqui" ]; then
   echo "Define BASE_PASSWORD en .env"; exit 1
 fi
-if printf '%s' "$BASE_PASSWORD" | grep -q '[^a-z0-9._-]'; then
+if printf '%s' "$BASE_PASSWORD" | grep -q '[^a-z0-9._+-]'; then
   echo "BASE_PASSWORD debe ser minúsculas, sin espacios ni símbolos raros"; exit 1
 fi
 BASE_LEN=${#BASE_PASSWORD}
@@ -50,8 +50,8 @@ npx -y staticrypt@3.5.4 "$tmp/index.html" \
   --remember false \
   --short \
   --template-title "Guía Freelancer · frani.be" \
-  --template-instructions "Tu clave es la base que te envié + tu usuario de Instagram, todo junto, en minúscula y sin @." \
-  --template-placeholder "base + tu_usuario" \
+  --template-instructions "Tu clave es la que te envié<br><small>(clave base + tu usuario de Instagram, todo junto, en minúscula y sin @)</small>" \
+  --template-placeholder "pass+ tu_usuario" \
   --template-button "Ver la guía" \
   --template-error "Clave incorrecta, revísala e inténtalo de nuevo." \
   --template-color-primary "#8b2db3" \

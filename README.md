@@ -1,15 +1,14 @@
-# Guía Freelancer (acceso con clave personal)
+# Guía Freelancer (acceso con clave base + usuario IG)
 
-Guía en HTML encriptada con [StatiCrypt](https://github.com/robinmoisson/staticrypt), servida por GitHub Pages en `guia.frani.be`. Cada persona recibe un link propio y una clave `BASE + su_usuario_IG`. Cada apertura queda registrada en una planilla de Google.
+Guía en HTML encriptada con [StatiCrypt](https://github.com/robinmoisson/staticrypt), servida por GitHub Pages en `guia.frani.be`. Un solo link para todas las personas: cada quien entra con `BASE + su_usuario_IG` y cada apertura queda registrada en una planilla de Google.
 
 ## Cómo funciona
 
 - `guia-freelancer.html` es la fuente (ignorada, nunca se sube).
-- `usuarios.txt` lista los usernames de Instagram a quienes enviarás la guía (ignorado).
-- `build.sh` genera `d/<slug>/index.html` por usuario: un blob encriptado que solo se abre con `BASE_PASSWORD + usuario`. El slug es un hash, así los usernames no se ven en el repo.
-- Cada página desencriptada dispara un beacon a tu Google Sheet (una sola vez por navegador), anotando el usuario.
-- `links.txt` (ignorado) queda con `usuario | url | clave` para copiar/pegar en los DMs.
-- `index.html` / `404.html` son páginas de entrada sin contenido.
+- `build.sh` genera `index.html`: la guía encriptada con `BASE_PASSWORD`. Es lo único que ve quien entra a `guia.frani.be`.
+- El prompt pide una sola clave. La página separa los primeros N caracteres (largo de la base) como contraseña real y el resto como usuario IG; valida que el usuario tenga formato `@usuario`, desencripta y anota el acceso (una vez por navegador por usuario).
+- `template_guia.html` es la plantilla del prompt; `build.sh` le inyecta `BASE_LEN` y `LOG_URL`. La base nunca queda en el archivo publicado, solo su largo.
+- `404.html` es la página de entrada para rutas inválidas.
 
 ## Setup (una sola vez)
 
@@ -23,28 +22,24 @@ Guía en HTML encriptada con [StatiCrypt](https://github.com/robinmoisson/static
 ### 2. Secretos locales
 
 ```bash
-cp .env.example .env       # define BASE_PASSWORD (minúsculas) y LOG_URL
-cp usuarios.txt.example usuarios.txt   # agrega los usernames reales
+cp .env.example .env   # define BASE_PASSWORD (minúsculas, min 6) y LOG_URL
 ```
 
-### 3. Repo en GitHub
-
-```bash
-git remote add origin git@github.com:frani-be/guia.git
-git push -u origin main
-```
+### 3. GitHub Pages y DNS
 
 En el repo: Settings > Pages > Source: Deploy from a branch > `main` / root. El `CNAME` ya apunta a `guia.frani.be`; agrega el registro CNAME `guia` -> `frani-be.github.io` en tu DNS.
 
 ## Uso habitual
 
 ```bash
-./build.sh    # regenera d/ y links.txt tras editar la guía o usuarios.txt
-git add d/ && git commit -m "Actualiza guía" && git push
+./build.sh    # regenera index.html tras editar la guía o cambiar la base
+git add index.html && git commit -m "Actualiza guía" && git push
 ```
 
-Para agregar personas: añade su username a `usuarios.txt` y corre `build.sh` + push. Para revocar: borra su línea y vuelve a generar.
+Para compartir, envías el link `guia.frani.be` y le dices a cada persona: "tu clave es `BASE` seguida de tu usuario de Instagram". No necesitas registrar usuarios antes.
 
 ## Límites del seguimiento
 
-El beacon confirma que alguien abrió la página con éxito desde ese navegador. No prueba que la leyó ni la descargó; para "quién no accedió" basta comparar la planilla contra `usuarios.txt`.
+- La planilla registra usuario + fecha + user-agent solo cuando alguien desbloquea la página.
+- El usuario es auto-reportado: si alguien conoce la base puede escribir otro usuario. Para audiencia casual de Instagram es suficiente; no es verificación de identidad.
+- El beacon confirma apertura, no lectura ni descarga. "Quiénes no entraron" = personas a quienes enviaste menos las que aparecen en la planilla.

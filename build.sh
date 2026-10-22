@@ -1,6 +1,7 @@
 #!/bin/bash
-# Genera una versión encriptada de guia-freelancer.html por cada usuario de usuarios.txt
-# Salida: d/<slug>/index.html (solo blobs encriptados, el contenido no es legible)
+# Genera index.html: la guía encriptada con BASE_PASSWORD.
+# Cada persona entra con la clave BASE + su usuario de Instagram (sin lista previa).
+# El sufijo (usuario) queda registrado en la planilla vía LOG_URL.
 # Requiere: .env con BASE_PASSWORD y LOG_URL (ver .env.example)
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -14,54 +15,47 @@ fi
 set -a; . ./.env; set +a
 
 FUENTE="guia-freelancer.html"
-OUT_DIR="d"
-BASE_URL="https://guia.frani.be"
-STCRYPT="npx -y staticrypt@3.5.4"
-
 [ -f "$FUENTE" ] || { echo "Falta $FUENTE"; exit 1; }
-[ -f usuarios.txt ] || { echo "Falta usuarios.txt"; exit 1; }
 if [ -z "${BASE_PASSWORD:-}" ] || [ "$BASE_PASSWORD" = "tu_base_aqui" ]; then
   echo "Define BASE_PASSWORD en .env"; exit 1
+fi
+if printf '%s' "$BASE_PASSWORD" | grep -q '[^a-z0-9._-]'; then
+  echo "BASE_PASSWORD debe ser minúsculas, sin espacios ni símbolos raros"; exit 1
+fi
+BASE_LEN=${#BASE_PASSWORD}
+if [ "$BASE_LEN" -lt 6 ]; then
+  echo "BASE_PASSWORD muy corta (mínimo 6 caracteres)"; exit 1
 fi
 if [ -z "${LOG_URL:-}" ]; then
   echo "Aviso: LOG_URL vacío, no se registrarán accesos"
 fi
+LOG_ESC=${LOG_URL//&/\\&}
 
-rm -rf "$OUT_DIR"
-: > links.txt
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
 
-while IFS= read -r raw || [ -n "$raw" ]; do
-  case "$raw" in ''|\#*) continue;; esac
-  user=$(printf '%s' "$raw" | tr -d ' \r' | sed 's/^@//' | tr 'A-Z' 'a-z')
-  [ -z "$user" ] && continue
+# Plantilla del prompt con BASE_LEN y LOG_URL inyectados
+sed -e "s|__BASE_LEN__|$BASE_LEN|" -e "s|__LOG_URL__|$LOG_ESC|g" template_guia.html > "$tmp/template.html"
 
-  slug=$(printf '%s' "$user" | shasum -a 256 | cut -c1-10)
-  tmp="$(mktemp -d)"
-
-  # Variante por usuario: guía + beacon que anota el acceso en la planilla
-  cat "$FUENTE" > "$tmp/index.html"
-  cat >> "$tmp/index.html" <<EOF
-<script>(function(){try{if(localStorage.getItem('guia_log'))return;localStorage.setItem('guia_log','1')}catch(e){};(new Image()).src='${LOG_URL}?u=${user}&ua='+encodeURIComponent(navigator.userAgent)})();</script>
+# Guía + registro de respaldo dentro de la página ya desencriptada
+cat "$FUENTE" > "$tmp/index.html"
+cat >> "$tmp/index.html" <<EOF
+<script>(function(){var u;try{u=localStorage.getItem('guia_u')}catch(e){return}if(!u)return;var k='guia_logged_'+u,done=false;try{done=!!localStorage.getItem(k);if(!done)localStorage.setItem(k,'1')}catch(e){}if(!done){(new Image()).src='${LOG_URL}?u='+encodeURIComponent(u)+'&ua='+encodeURIComponent(navigator.userAgent)}})();</script>
 EOF
 
-  $STCRYPT "$tmp/index.html" \
-    -p "${BASE_PASSWORD}${user}" \
-    -d "$OUT_DIR/$slug" \
-    --remember false \
-    --short \
-    --template-title "Guía Freelancer · frani.be" \
-    --template-instructions "Ingresa tu clave personal: la base que te envié + tu usuario de Instagram, todo junto, en minúscula y sin @." \
-    --template-placeholder "tu clave" \
-    --template-button "Ver la guía" \
-    --template-error "Clave incorrecta, revísala e inténtalo de nuevo." \
-    --template-color-primary "#8b2db3" \
-    --template-color-secondary "#eedffc" \
-    >/dev/null
+npx -y staticrypt@3.5.4 "$tmp/index.html" \
+  -p "$BASE_PASSWORD" \
+  -d "$tmp/out" \
+  -t "$tmp/template.html" \
+  --remember false \
+  --short \
+  --template-title "Guía Freelancer · frani.be" \
+  --template-instructions "Tu clave es la base que te envié + tu usuario de Instagram, todo junto, en minúscula y sin @." \
+  --template-placeholder "base + tu_usuario" \
+  --template-button "Ver la guía" \
+  --template-error "Clave incorrecta, revísala e inténtalo de nuevo." \
+  --template-color-primary "#8b2db3" \
+  --template-color-secondary "#eedffc"
 
-  printf '@%s\t%s/d/%s/\t%s%s\n' "$user" "$BASE_URL" "$slug" "$BASE_PASSWORD" "$user" >> links.txt
-  rm -rf "$tmp"
-  echo "ok  $user -> $OUT_DIR/$slug/"
-done < usuarios.txt
-
-echo ""
-echo "Listo: $(wc -l < links.txt | tr -d ' ') links en links.txt (usuario | url | clave)"
+mv "$tmp/out/index.html" ./index.html
+echo "Listo: index.html encriptado. Clave de acceso = ${BASE_PASSWORD} + usuario_ig (base_len=${BASE_LEN})"

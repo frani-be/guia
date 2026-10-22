@@ -9,11 +9,7 @@ frani_be.svg
 .env
 .staticrypt.json
 
-# Lista de usuarios y links generados
-usuarios.txt
-links.txt
-
-# Temporales del build (d/ SÍ se commitea: es lo que sirve Pages)
+# Temporales del build
 tmp/
 
 node_modules/

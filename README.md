@@ -30,7 +30,7 @@ cp usuarios.txt.example usuarios.txt   # agrega los usernames reales
 ### 3. Repo en GitHub
 
 ```bash
-git remote add origin https://github.com/frani-be/<repo>.git
+git remote add origin git@github.com:frani-be/guia.git
 git push -u origin main
 ```
 

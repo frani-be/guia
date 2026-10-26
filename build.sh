@@ -19,7 +19,7 @@ FUENTE="guia-freelancer.html"
 if [ -z "${BASE_PASSWORD:-}" ] || [ "$BASE_PASSWORD" = "tu_base_aqui" ]; then
   echo "Define BASE_PASSWORD en .env"; exit 1
 fi
-if printf '%s' "$BASE_PASSWORD" | grep -q '[^a-z0-9._+-]'; then
+if printf '%s' "$BASE_PASSWORD" | grep -q '[^a-z0-9._+@-]'; then
   echo "BASE_PASSWORD debe ser minúsculas, sin espacios ni símbolos raros"; exit 1
 fi
 BASE_LEN=${#BASE_PASSWORD}

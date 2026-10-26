@@ -51,7 +51,7 @@ npx -y staticrypt@3.5.4 "$tmp/index.html" \
   --short \
   --template-title "Guía Freelancer · frani.be" \
   --template-instructions "Tu clave es la que te envié<br><small>(clave base + tu usuario de Instagram, todo junto, en minúscula y sin @)</small>" \
-  --template-placeholder "pass+ tu_usuario" \
+  --template-placeholder "pass+tu_usuario" \
   --template-button "Ver la guía" \
   --template-error "Clave incorrecta, revísala e inténtalo de nuevo." \
   --template-color-primary "#8b2db3" \

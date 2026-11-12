@@ -4,8 +4,9 @@ Guía en HTML encriptada con [StatiCrypt](https://github.com/robinmoisson/static
 
 ## Cómo funciona
 
-- `guia-freelancer.html` es la fuente (ignorada, nunca se sube).
-- `build.sh` genera `index.html`: la guía encriptada con `BASE_PASSWORD`. Es lo único que ve quien entra a `guia.frani.be`.
+- `guia-freelancer.html` es la fuente de la guía (ignorada, nunca se sube).
+- `build.sh` genera `index.html` (la guía) y `calculadora/index.html` (redirección a la planilla de `CALC_URL`), ambos encriptados con `BASE_PASSWORD`. El prompt es el mismo: base + usuario IG.
+- `calculadora_src.html` es la plantilla de la página de redirección (el `__CALC_URL__` lo inyecta el build desde `.env`, así la URL real no queda en el repo).
 - El prompt pide una sola clave. La página separa los primeros N caracteres (largo de la base) como contraseña real y el resto como usuario IG; valida que el usuario tenga formato `@usuario`, desencripta y anota el acceso (una vez por navegador por usuario).
 - `template_guia.html` es la plantilla del prompt; `build.sh` le inyecta `BASE_LEN` y `LOG_URL`. La base nunca queda en el archivo publicado, solo su largo.
 - `404.html` es la página de entrada para rutas inválidas.

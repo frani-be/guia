@@ -236,8 +236,9 @@
             let ultimoUsuario = "";
 
             function registrarAcceso(u) {
+                const sep = LOG_URL.indexOf("?") >= 0 ? "&" : "?";
                 (new Image()).src =
-                    LOG_URL + "?u=" + encodeURIComponent(u) + "&ua=" + encodeURIComponent(navigator.userAgent);
+                    LOG_URL + sep + "u=" + encodeURIComponent(u) + "&ua=" + encodeURIComponent(navigator.userAgent);
             }
 
             // you can edit these values to customize some of the behavior of StatiCrypt

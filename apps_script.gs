@@ -12,8 +12,9 @@
 
 function doGet(e) {
   var u = ((e && e.parameter && e.parameter.u) || '').toString().slice(0, 64);
+  var p = ((e && e.parameter && e.parameter.p) || '').toString().slice(0, 20);
   var ua = ((e && e.parameter && e.parameter.ua) || '').toString().slice(0, 250);
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
-  sheet.appendRow([new Date(), u, ua]);
+  sheet.appendRow([new Date(), u, p, ua]);
   return ContentService.createTextOutput('ok');
 }
